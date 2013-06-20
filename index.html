@@ -94,8 +94,8 @@
 	<script>
 	$(function(){
 		
-		var stache		 = '{{#teams}}<input type="text" name="team" placeholder="Team Name" />&nbsp;<input type="number" name="weight" placeholder="Weight" /><br />{{/teams}}<button id="back-to-question">&larr; Back</button>&nbsp;<button id="go-lottery">Go Lottery &rarr;</button>',
-			endStache	 = '{{#teams}}<div><span class="pick">Pick #{{pick}}</span><span class="team">: {{name}} ({{percent}}%)</span></div>{{/teams}}<button id="go-back">Start Over</button>',
+		var stache		 = '<p>Enter teams & weights (optional). Weight ideally corresponds to position in the previous seasons final standings.</p>{{#teams}}<input type="text" name="team" placeholder="Team Name" />&nbsp;<input type="number" name="weight" placeholder="Weight" /><br />{{/teams}}<button id="back-to-question">&larr; Back</button>&nbsp;<button id="go-lottery">Go Lottery &rarr;</button>',
+			endStache	 = '<p>Click to reveal results</p>{{#teams}}<div><span class="pick">Pick #{{pick}}</span><span class="team">: {{name}} ({{percent}}%)</span></div>{{/teams}}<button id="go-back">Start Over</button>',
 			LotteryTeams = Backbone.Collection.extend({}),
 			LotteryBoard = Backbone.View.extend({
 				id: "team-list",

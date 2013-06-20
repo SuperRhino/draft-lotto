@@ -7,7 +7,7 @@ Live demo: http://superrhino.net/lottery/
 
 ## How To
 
-You determine each teams odds of winning the lottery by entering odds (i.e. weight) for each team's chance at the #1 pick. For example, their position in the previous season's final standing is ideal. Draft-Lotto does the rest.
+You determine each teams odds of winning the lottery by entering weight for each team's chance at the #1 pick (For example, their position in the previous season's final standing is ideal). Draft-Lotto does the rest.
 
 
 ### Features
