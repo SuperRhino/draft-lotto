@@ -16,3 +16,4 @@ You determine each teams odds of winning the lottery by entering weight for each
 - Weighted or straight-random (weights are optional)
 - Results of lotto revealed one-at-a-time; ideal for a real-time lottery event
 - Teams original odds revealed on results board (see who got shafted & whose lotto-lucky)
+- localStorage remembers previous results just in case
