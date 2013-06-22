@@ -72,7 +72,13 @@
 			-moz-user-select: none;     /* Firefox all */
 			-ms-user-select: none;      /* IE 10+ */
 		}
-		#results-board .team { display: none; color: #555; text-shadow: #444; text-shadow: 1px 1px 2px #fff; }
+		#results-board .team { display: none; color: #555; text-shadow: #444; text-shadow: 1px 1px 2px #fff; line-height: normal; }
+		#results-board .plusmin,
+		#results-board .percent { 
+			font-size: 0.75em;
+			font-style: italic;
+			padding-left: 1em;
+		}
 		#go-back { margin-top: 25px; }
 		
 		@media only screen and (min-width: 65em) {
@@ -95,7 +101,7 @@
 	$(function(){
 		
 		var stache		 = '<p>Enter teams & weights (optional). Weight ideally corresponds to position in the previous seasons final standings.</p>{{#teams}}<input type="text" name="team" placeholder="Team Name" />&nbsp;<input type="number" name="weight" placeholder="Weight" /><br />{{/teams}}<button id="back-to-question">&larr; Back</button>&nbsp;<button id="go-lottery">Go Lottery &rarr;</button>',
-			endStache	 = '<p>Click to reveal results</p>{{#teams}}<div><span class="pick">Pick #{{pick}}</span><span class="team">: {{name}} ({{percent}}%)</span></div>{{/teams}}<button id="go-back">Start Over</button>',
+			endStache	 = '<p>Click to reveal results</p>{{#teams}}<div><span class="pick">Pick #{{pick}}</span><span class="team">: {{name}} <span class="plusmin">{{plusmin}}</span> <span class="percent">{{percent}}%</span></span></div>{{/teams}}<button id="go-back">Start Over</button>',
 			LotteryTeams = Backbone.Collection.extend({}),
 			LotteryBoard = Backbone.View.extend({
 				id: "team-list",
@@ -139,12 +145,15 @@
 					while( weighted.length > 0 ){
 					
 						// Grab a rando & choose him
-						var rando 	= Math.floor(Math.random()*weighted.length),
-							team	= weighted[rando],
-							chance	= (Math.floor( (parseInt(teamWeights[team])/totalWeight)*1000) / 10);
+						var rando 		= Math.floor(Math.random()*weighted.length),
+							team		= weighted[rando],
+							projected	= (teamNames.length - parseInt(teamWeights[team])) + 1,
+							actual		= (lottoBoard.teams.length+1),
+							plusmin		= ( projected >= actual ) ? "+"+(projected-actual) : "-"+(actual-projected),
+							chance		= (Math.floor( (parseInt(teamWeights[team])/totalWeight)*1000) / 10);
 						
 						// push this team onto the lotto board:
-						lottoBoard.teams[lottoBoard.teams.length] = { pick: (lottoBoard.teams.length+1), name: team, percent: chance };
+						lottoBoard.teams[lottoBoard.teams.length] = { pick: actual, name: team, percent: chance, plusmin: plusmin };
 						console.log(lottoBoard.teams.length, "Weighted:", weighted, "Rando:", rando, team, lottoBoard);
 						
 						// remove this team from the fold
