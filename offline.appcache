@@ -5,6 +5,7 @@ CACHE MANIFEST
 # VERSION 0.1
 
 CACHE:
+/index.html
 http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js
 http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js
 http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js
@@ -13,6 +14,3 @@ http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js
  
 # FALLBACK:
 / /offline.html
- 
-# NETWORK:
-# *
