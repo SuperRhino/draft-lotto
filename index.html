@@ -3,16 +3,16 @@
 <head>
 	<title>Draft Lotto</title>
 	<meta charset="utf-8">
-	
+
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<meta name="apple-mobile-web-app-title" content="Draft Lotto">
-	
+
 	<link rel="apple-touch-icon-precomposed" href="draft-lotto-57.png">
 	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="draft-lotto-72.png">
 	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="draft-lotto-114.png">
 	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="draft-lotto-144.png">
-	
+
 	<style>
 		* { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
 		#body-wrap {
@@ -24,12 +24,12 @@
 			background-color: #f1f1f1;
 			color: #707070;
 
-			-webkit-transition: margin 0.5s ease-out; 
-			-moz-transition: margin 0.5s ease-out; 
-			-o-transition: margin 0.5s ease-out; 
-			transition: margin 0.5s ease-out; 
+			-webkit-transition: margin 0.5s ease-out;
+			-moz-transition: margin 0.5s ease-out;
+			-o-transition: margin 0.5s ease-out;
+			transition: margin 0.5s ease-out;
 		}
-		
+
 		h1 { color: #666; }
 		button {
 		  color: #f1f1f1;
@@ -51,81 +51,135 @@
 		  background: #55B4B0;
 		}
 		input { font-size: 1.4em; line-height: 1.4em; padding: 5px; -webkit-border-radius: 8px; border-radius: 8px; background-clip: padding-box; }
-	
+
 		/* step 1 */
 		#question {}
 		#show-old { margin-top: 25px; font-size: 0.75em; text-transform: lowercase; }
 		#show-old a { color: #aaa; }
 		#question input[name=numTeams] { width: 5em; }
-		
+
 		/* step 2 */
 		#team-list {}
 		#team-list input[name=team] { width: 70%; margin-right: 1%; }
 		#team-list input[name=weight] { width: 23%; }
 		#go-lottery { margin: 15px 0 0 25px; }
-		
+
 		/* step 3 */
 		#results-board { color: #aaa; }
-		#results-board > div { 
-			cursor: pointer; background-color: #ddd; border-bottom: 1px solid #c9c9c9; border-top: 1px solid #eee; padding: 50px 10px; font-size: 1.2em; line-height: 1.4em; 
+		#results-board table { width: 100%; }
+		#results-board th {
+		    background-color: #666;
+    		width: 10%;
+        }
+		#results-board td {
+    		padding: 50px 10px;
+    		border-bottom: 1px solid #c9c9c9;
+    		border-top: 1px solid #eee;
+		}
+		#results-board tr {
+			cursor: pointer; background-color: #ddd; font-size: 1.2em; line-height: 1.4em;
+			text-align: center;
 			-webkit-user-select: none;  /* Chrome all / Safari all */
 			-moz-user-select: none;     /* Firefox all */
 			-ms-user-select: none;      /* IE 10+ */
 		}
-		#results-board .team { display: none; color: #555; text-shadow: #444; text-shadow: 1px 1px 2px #fff; line-height: normal; }
+        #results-board td.team {
+            color: #555;
+		    text-shadow: #444;
+		    text-shadow: 1px 1px 2px #fff;
+        }
+		#results-board .team {
+		    width: 60%;
+		    text-align: left;
+		    line-height: normal;
+        }
+		#results-board .reveal { display: none; }
 		#results-board .plusmin,
-		#results-board .percent { 
+		#results-board .projected,
+		#results-board .percent {
 			font-size: 0.75em;
 			font-style: italic;
-			padding-left: 1em;
 		}
 		#go-back { margin-top: 25px; }
-		
+
 		@media only screen and (min-width: 65em) {
 		    /* Desktop style adjustments for viewports that meet the condition */
 			#body-wrap { margin: 0 15%; font-size: 16px; }
 			button{ padding: 5px 10px; }
 			#team-list input[name=team] { width: 70%; margin-right: 1%; }
 			#team-list input[name=weight] { width: 20%; }
-			#results-board > div { padding: 15px 10px; }
-			#results-board > div:hover { background-color: #d0d0d0; }
+			#results-board td { padding: 15px 10px; }
+			#results-board tr:hover { background-color: #d0d0d0; }
 		}
 	</style>
-	
+
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
-		
+
+    <!-- Templates -->
+    <script id="tmpl-starter" type="text/html">
+        <p>Enter teams & weights (optional). Weight ideally corresponds to position in the previous seasons final standings.</p>
+        {{#teams}}
+        <input type="text" name="team" placeholder="Team Name" />&nbsp;<input type="number" name="weight" placeholder="Weight" /><br />
+        {{/teams}}
+        <button id="back-to-question">&larr; Back</button>&nbsp;<button id="go-lottery">Go Lottery &rarr;</button>
+    </script>
+    <script id="tmpl-final-board" type="text/html">
+        <p>Click to reveal results</p>
+        <table cellpadding="3" cellspacing="0">
+            <tr>
+                <th class="pick">Pick</th>
+                <th class="team">Team</th>
+                <th class="plusmin">+/-</th>
+                <th class="projected">Projected</th>
+                <th class="percent">Percent</th>
+            </tr>
+            {{#teams}}
+            <tr>
+                <td class="pick">{{pick}}</td>
+                <td class="team"><span class="reveal">{{name}}</span></td>
+                <td class="plusmin"><span class="reveal">{{plusmin}}</span></td>
+                <td class="projected"><span class="reveal">{{projected}}</span></td>
+                <td class="percent"><span class="reveal">{{percent}}%</span></td>
+            </tr>
+            {{/teams}}
+        </table>
+        <button id="go-back">Start Over</button>
+    </script>
+
+
 	<script>
 	$(function(){
-		
-		var stache		 = '<p>Enter teams & weights (optional). Weight ideally corresponds to position in the previous seasons final standings.</p>{{#teams}}<input type="text" name="team" placeholder="Team Name" />&nbsp;<input type="number" name="weight" placeholder="Weight" /><br />{{/teams}}<button id="back-to-question">&larr; Back</button>&nbsp;<button id="go-lottery">Go Lottery &rarr;</button>',
-			endStache	 = '<p>Click to reveal results</p>{{#teams}}<div><span class="pick">Pick #{{pick}}</span><span class="team">: {{name}} <span class="plusmin">{{plusmin}}</span> <span class="percent">{{percent}}%</span></span></div>{{/teams}}<button id="go-back">Start Over</button>',
-			LotteryTeams = Backbone.Collection.extend({}),
-			LotteryBoard = Backbone.View.extend({
+
+        var log = true;
+		var tmplStarter    = $("#tmpl-starter").html(),
+			tmplFinalBoard = $("#tmpl-final-board").html(),
+			LotteryTeams   = Backbone.Collection.extend({}),
+			LotteryBoard   = Backbone.View.extend({
 				id: "team-list",
 				render: function(){
-					var html = Mustache.render( stache, { teams: this.collection.toJSON(), oldResults: old } );
+					var html = Mustache.render( tmplStarter, { teams: this.collection.toJSON(), oldResults: old } );
 					this.$el.html(html).appendTo("#body-wrap");
 					return this;
 				},
 				initialize: function(){
-					console.log("LottoBoard:INIT");
+					if (log) console.log("LottoBoard:INIT");
 				},
 				events: {
 					"click #back-to-question": "goBack",
 					"click #go-lottery": "runLottery"
 				},
-				
+
 				goBack: function(){
 					window.location.reload();
 				},
-				
+
 				runLottery: function(){
 					var $teams 		= this.$el.find("input[name=team]"),
 						$weights 	= this.$el.find("input[name=weight]");
-						
+
 					var weighted	= [],
 						lottoBoard 	= {"teams":[]},
 						teamNames	= _.map($teams, function(team){ return $(team).val(); }),
@@ -138,12 +192,12 @@
 						for( var j = 0; j < weightVals[i]; j++ )
 							weighted[weighted.length] = teamNames[i];
 
-					console.log("GO LOTTERY!", /*teamNames, weightVals,*/ teamWeights, weighted.length, weighted);
-					
+					if (log) console.log("GO LOTTERY!", /*teamNames, weightVals,*/ teamWeights, weighted.length, weighted);
+
 					// Loop until `weighted` is empty:
 					var totalWeight = weighted.length;
 					while( weighted.length > 0 ){
-					
+
 						// Grab a rando & choose him
 						var rando 		= Math.floor(Math.random()*weighted.length),
 							team		= weighted[rando],
@@ -151,15 +205,21 @@
 							actual		= (lottoBoard.teams.length+1),
 							plusmin		= ( projected >= actual ) ? "+"+(projected-actual) : "-"+(actual-projected),
 							chance		= (Math.floor( (parseInt(teamWeights[team])/totalWeight)*1000) / 10);
-						
+
 						// push this team onto the lotto board:
-						lottoBoard.teams[lottoBoard.teams.length] = { pick: actual, name: team, percent: chance, plusmin: plusmin };
-						console.log(lottoBoard.teams.length, "Weighted:", weighted, "Rando:", rando, team, lottoBoard);
-						
+						lottoBoard.teams[lottoBoard.teams.length] = {
+						    pick: actual,
+						    name: team,
+						    percent: chance,
+						    plusmin: plusmin,
+						    projected: projected,
+                        };
+						if (log) console.log(lottoBoard.teams.length, "Weighted:", weighted, "Rando:", rando, team, lottoBoard);
+
 						// remove this team from the fold
 						weighted = _.without( weighted, team );
 					}
-					
+
 					// Lotto order is set:
 					if( lottoBoard.teams.length ) {
 						localStorage.setItem("last-board", JSON.stringify(lottoBoard));
@@ -168,12 +228,12 @@
 					}
 				}
 			}),
-			
+
 			// Final Results View:
 			ResultsBoard = Backbone.View.extend({
 				id: "results-board",
 				render: function(){
-					var html = Mustache.render( endStache, this.data );
+					var html = Mustache.render( tmplFinalBoard, this.data );
 					this.$el.html(html).appendTo("#body-wrap");
 					return this;
 				},
@@ -181,19 +241,19 @@
 					this.data = props.data;
 				},
 				events: {
-					"click > div": function(e){
-						$div = $(e.currentTarget);
-						$div.find(".team").fadeIn();
+					"click tr": function(e){
+						$row = $(e.currentTarget);
+						$row.find(".reveal").fadeIn();
 					},
 					"click #go-back": function(){
 						window.location.reload();
 					}
 				}
 			});
-			
-		
-		
-		// Show time... 
+
+
+
+		// Show time...
 		var teams = new LotteryTeams(),
 			theboard = new LotteryBoard({collection: teams}),
 			old = localStorage.getItem("last-board") ? JSON.parse(localStorage.getItem("last-board")) : null;
@@ -208,8 +268,8 @@
 				theboard.render();
 			}
 		});
-		
-		if( old ){
+
+		if (old) {
 			$("<div id='show-old'><a href='#'>View previous board</a></div>")
 				.appendTo("#question")
 				.children("a")
@@ -219,15 +279,15 @@
 					showResults( old );
 				});
 		}
-		
+
 		function showResults( lottoBoard ){
-			console.log("Showing results with: ", lottoBoard);
+			if (log) console.log("Showing results with: ", lottoBoard);
 			lottoBoard.teams.reverse();
-			console.log("Reverse results with: ", lottoBoard);
+			if (log) console.log("Reverse results with: ", lottoBoard);
 			var resultsBoard = new ResultsBoard({data: lottoBoard});
 			resultsBoard.render();
 		}
-		
+
 	});
 	</script>
 </head>
